@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>郊狼电击器预约（填写）</title>
+<script src="config.js"></script>
+</head>
+<body>
+<h2>预约填写</h2>
+
+<input id="name" placeholder="昵称"><br><br>
+<input id="qq" placeholder="QQ号"><br><br>
+<input id="date" type="date"><br><br>
+<button onclick="submit()">提交预约</button>
+
+<script>
+async function submit() {
+  const name = document.getElementById('name').value;
+  const qq = document.getElementById('qq').value;
+  const date = document.getElementById('date').value;
+
+  if (!name || !qq || !date) {
+    alert("请填写完整");
+    return;
+  }
+
+  const issues = await fetch(
+    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`
+  ).then(r => r.json());
+
+  const sameDay = issues.filter(i => i.title === date);
+  if (sameDay.length >= 2) {
+    alert("该日期已满（2人），请换日期");
+    return;
+  }
+
+  await fetch(
+    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`,
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: date,
+        body: `昵称：${name}\nQQ：${qq}`
+      })
+    }
+  );
+
+  alert("预约成功！");
+}
+</script>
+</body>
+</html>
